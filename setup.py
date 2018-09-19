@@ -1,36 +1,29 @@
 #!/usr/bin/python3
-"""Setup module for provisioner pkg."""
-from setuptools import setup
+"""Setup module for bigO_grapher pkg."""
+from setuptools import setup, find_packages
 import os
 import sys
 import shutil
 import stat
 from setuptools.command.develop import develop
 from setuptools.command.install import install
+from abstract_requires import requires
 
 pkg_name = "bigO_grapher"
 parent_dir = os.path.dirname(os.path.realpath(__file__))
 data_src_dir = pkg_name + "_data"
 config_src_dir = pkg_name + "_config"
 defaults_location = os.path.join(pkg_name, "defaults")
-requires = [
-    "numpy>=2",
-    "matplotlib>=1"
-]
 
 # Create scripts list
-script_dir = "bin"
+script_dir = os.path.join(parent_dir, "bin")
 scripts = []
 try:
     for f in os.listdir(script_dir):
-        scripts.append(script_dir + str(f))
+        scripts.append(os.path.join(script_dir, str(f)))
+
 except FileNotFoundError:
     pass
-
-pkg_has_config = not True
-if pkg_has_config:
-    requires.append("provision_py_proj")
-
 
 def copy_pkg_files():
     """Copy config and data files."""
@@ -42,26 +35,27 @@ def copy_pkg_files():
     ]
     for d, t in pkg_dirs_to_copy:
         t = os.path.join(t, d)
-        d = os.path.join(pkg_name, d)
+        d = os.path.join(os.path.join(parent_dir, pkg_name), d)
 
-        shutil.rmtree(t, ignore_errors=True)
-        shutil.copytree(d, t)
+        if os.path.exists(d):
+            shutil.rmtree(t, ignore_errors=True)
+            shutil.copytree(d, t)
 
-        user = os.environ["SUDO_USER"]
+            user = os.environ["SUDO_USER"]
 
-        for root, dirs, files in os.walk(t):
-            shutil.chown(root, user=user, group=user)
-            os.chmod(root, stat.S_IRWXU)
+            for root, dirs, files in os.walk(t):
+                shutil.chown(root, user=user, group=user)
+                os.chmod(root, stat.S_IRWXU)
 
-            for d in dirs:
-                d_path = os.path.join(root, d)
-                shutil.chown(d_path, user=user, group=user)
-                os.chmod(d_path, stat.S_IRWXU)
+                for d in dirs:
+                    d_path = os.path.join(root, d)
+                    shutil.chown(d_path, user=user, group=user)
+                    os.chmod(d_path, stat.S_IRWXU)
 
-            for f in files:
-                f_path = os.path.join(root, f)
-                shutil.chown(f_path, user=user, group=user)
-                os.chmod(f_path, stat.S_IRUSR | stat.S_IWUSR)
+                for f in files:
+                    f_path = os.path.join(root, f)
+                    shutil.chown(f_path, user=user, group=user)
+                    os.chmod(f_path, stat.S_IRUSR | stat.S_IWUSR)
 
 
 def reset():
@@ -78,10 +72,10 @@ def setuptools_setup():
         version="0.1",
         description="default description",
         url="default url",
-        author="Kevin Wolf",
-        author_email="kevinuwolf@gmail.com",
+        author="default author",
+        author_email="default author",
         license="gplv3.txt",
-        packages=["bigO_grapher"],
+        packages=find_packages(),
         scripts=scripts,
         install_requires=requires,
         setup_requires=requires,
@@ -90,12 +84,13 @@ def setuptools_setup():
 
 def main():
     """Main method."""
+    os.chdir(parent_dir)
+
     if sys.argv[1] == "reset":
         reset()
     else:
         setuptools_setup()
-        if pkg_has_config:
-            copy_pkg_files()
+        copy_pkg_files()
 
 if __name__ == "__main__":
     main()
