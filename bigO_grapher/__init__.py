@@ -66,9 +66,10 @@ def time_f_on_inputs(*args, **kwargs):
     if graph:
         graph_times(times_to_graph)
 
-    time_averages = []
-    for t, label in times_to_graph:
-        time_averages.append(sum(times) / len(times))
+    if times:
+        time_averages = []
+        for t, label in times_to_graph:
+            time_averages.append(sum(times) / len(times))
 
     return max_times, time_averages
 
